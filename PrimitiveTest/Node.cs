@@ -12,6 +12,10 @@ namespace PrimitiveTest
         public Vector2 Position;
 
         public List<Node> Neighbours;
+        public Node Parent;
+
+        public float fScore;
+        public float gScore;
 
         public Node(Vector2 p)
         {

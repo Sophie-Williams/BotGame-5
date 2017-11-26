@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Remoting.Channels;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -24,6 +25,8 @@ namespace PrimitiveTest
         private Bot bot1;
 
         public static  Random random;
+
+        private List<Node> path;
 
         public Game()
         {
@@ -86,6 +89,8 @@ namespace PrimitiveTest
             //bot1 = new Bot(1, new Vector2(150, 600), StaticMap);
             bot1 = new Bot(1, new Vector2(600, 600), StaticMap);
 
+            path = StaticMap.GetShortestPath(Vector2.Zero, new Vector2(1000, 1000));
+
             //rect = new RectPrimitive(GraphicsDevice, 500, 200, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f), Color.White);
 
             //circle = new CirclePrimitive(GraphicsDevice, 192, ShapeType.Outline);
@@ -146,11 +151,22 @@ namespace PrimitiveTest
 
             spriteBatch.Begin();
 
-            for (int i = 0; i < StaticMap.NodeMap.Count; ++i)
+            //for (int i = 0; i < StaticMap.NodeMap.Count; ++i)
+            //{
+            //    foreach (var neighbour in StaticMap.NodeMap[i].Neighbours)
+            //    {
+            //        DebugDraw.DrawLine(spriteBatch, StaticMap.NodeMap[i].Position, neighbour.Position);
+            //    }
+            //}
+
+            foreach (Node n in path)
             {
-                foreach (var neighbour in StaticMap.NodeMap[i].Neighbours)
+                DebugDraw.DrawCircle(spriteBatch, n.Position, Color.Green);
+
+                if (n.Parent != null)
                 {
-                    DebugDraw.DrawLine(spriteBatch, StaticMap.NodeMap[i].Position, neighbour.Position);
+
+                    DebugDraw.DrawLine(spriteBatch, n.Position, n.Parent.Position);
                 }
             }
 
@@ -163,10 +179,10 @@ namespace PrimitiveTest
             //DebugDraw.DrawCircle(spriteBatch, 600, 600);
             //DebugDraw.DrawCircle(spriteBatch, 750, 1050);
 
-            foreach (var node in StaticMap.NodeMap)
-            {
-                DebugDraw.DrawCircle(spriteBatch, node.Position, Color.Green);
-            }
+            //foreach (var node in StaticMap.NodeMap)
+            //{
+            //    DebugDraw.DrawCircle(spriteBatch, node.Position, Color.Green);
+            //}
 
             bot1.Draw(spriteBatch);
 
