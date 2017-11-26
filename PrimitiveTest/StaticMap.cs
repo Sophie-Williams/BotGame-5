@@ -153,9 +153,9 @@ namespace PrimitiveTest
                     //      remove neighbor from CLOSED
                     //    if neighbor not in OPEN and neighbor not in CLOSED:
                     //                set g(neighbor) to cost
-                    //      add neighbor to OPEN
-                    //      set priority queue rank to g(neighbor) +h(neighbor)
-                    //      set neighbor's parent to current
+                            //      add neighbor to OPEN
+                            //      set priority queue rank to g(neighbor) +h(neighbor)
+                            //      set neighbor's parent to current
 
                     //reconstruct reverse path from goal to start
 //by following parent pointers
@@ -169,29 +169,29 @@ namespace PrimitiveTest
 
                 foreach (var neighbour in currentNode.Neighbours)
                 {
-                    neighbour.Parent = currentNode;
-                    if (closedPath.Contains(neighbour)) continue;
+                    //neighbour.Parent = currentNode;
+                    //if (closedPath.Contains(neighbour)) continue;
 
-                    if (!openPath.Contains(neighbour))
+                    float cost = currentNode.gScore + Vector2.Distance(currentNode.Position, neighbour.Position);
+
+                    if (openPath.Contains(neighbour) && cost < neighbour.gScore)
                     {
+                        openPath.Remove(neighbour);
+                    }
+                    if (closedPath.Contains(neighbour) && cost < neighbour.gScore)
+                    {
+                        closedPath.Remove(neighbour);
+                    }
+                    if (!closedPath.Contains(neighbour) && !openPath.Contains(neighbour))
+                    {
+                        neighbour.gScore = cost;
                         openPath.Add(neighbour);
+                        neighbour.Parent = currentNode;
 
-                        neighbour.gScore = currentNode.gScore + Vector2.Distance(currentNode.Position, neighbour.Position);
                         neighbour.fScore = neighbour.gScore + Vector2.Distance(neighbour.Position, endNode.Position);
-                        //gscore = total distance on path previous
                     }
-                    else
-                    {
-                        //test if using current G score will make neighbour f score lower. If so, update score
-                        float newG = currentNode.gScore + Vector2.Distance(currentNode.Position, neighbour.Position);
 
-                        if (newG < neighbour.gScore)
-                        {
-                            neighbour.gScore = newG;
-                            neighbour.fScore = newG + Vector2.Distance(neighbour.Position, endNode.Position);
-                        }
-
-                    }
+                    
 
                 }
                 
@@ -205,7 +205,21 @@ namespace PrimitiveTest
 
             } while (openPath.Any());
 
-            return closedPath;
+
+            List<Node> shortestPath = new List<Node>();
+
+            shortestPath.Add(endNode);
+
+            Node n = endNode;
+
+            do
+            {
+                shortestPath.Add(n.Parent);
+                n = n.Parent;
+            } while (n.Parent != null);
+
+
+            return shortestPath;
 
             //foreach node neighbour
             //find one closest to end goal
