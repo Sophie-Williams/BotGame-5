@@ -115,14 +115,6 @@ namespace PrimitiveTest
 
         public List<Node> GetShortestPath(Vector2 start, Vector2 end)
         {
-            //find closest node to start
-
-            //run a* algorithm to end node
-
-            //add end vector to list
-
-            //return list
-
             Node startNode = GetClosestNodeToPoint(start);
             Node endNode = GetClosestNodeToPoint(end);
 
@@ -140,26 +132,6 @@ namespace PrimitiveTest
                 //G - movement cost from start to current
                 //H - estimated cost from current square to end
 
-                    //OPEN = priority queue containing START
-                    //CLOSED = empty set
-                    //while lowest rank in OPEN is not the GOAL:
-                    //                current = remove lowest rank item from OPEN
-                    //                add current to CLOSED
-                    //  for neighbors of current:
-                    //    cost = g(current) + movementcost(current, neighbor)
-                    //    if neighbor in OPEN and cost less than g(neighbor):
-                    //      remove neighbor from OPEN, because new path is better
-                    //    if neighbor in CLOSED and cost less than g(neighbor): ⁽²⁾
-                    //      remove neighbor from CLOSED
-                    //    if neighbor not in OPEN and neighbor not in CLOSED:
-                    //                set g(neighbor) to cost
-                            //      add neighbor to OPEN
-                            //      set priority queue rank to g(neighbor) +h(neighbor)
-                            //      set neighbor's parent to current
-
-                    //reconstruct reverse path from goal to start
-//by following parent pointers
-
                 var currentNode = GetLowestFScore(openPath);
 
                 closedPath.Add(currentNode);
@@ -169,9 +141,6 @@ namespace PrimitiveTest
 
                 foreach (var neighbour in currentNode.Neighbours)
                 {
-                    //neighbour.Parent = currentNode;
-                    //if (closedPath.Contains(neighbour)) continue;
-
                     float cost = currentNode.gScore + Vector2.Distance(currentNode.Position, neighbour.Position);
 
                     if (openPath.Contains(neighbour) && cost < neighbour.gScore)
@@ -190,21 +159,9 @@ namespace PrimitiveTest
 
                         neighbour.fScore = neighbour.gScore + Vector2.Distance(neighbour.Position, endNode.Position);
                     }
-
-                    
-
                 }
-                
-                    //if (closedList.contains(neighbour) continue;
-
-                    //if (!openList.Contains(neighbour)
-                        //work out score
-                        //add to list
-                    //else
-                        //test if current G score will make F score better, if yes update parent becase its better path
 
             } while (openPath.Any());
-
 
             List<Node> shortestPath = new List<Node>();
 
@@ -220,31 +177,6 @@ namespace PrimitiveTest
 
 
             return shortestPath;
-
-            //foreach node neighbour
-            //find one closest to end goal
-            //add to path
-
-            //path.Add(startNode.Position);
-
-            //var minDistance = 10000f;
-            //Node nearestNode = null;
-
-
-            //foreach (var neighbour in startNode.Neighbours)
-            //{
-            //    var thisDistance = Vector2.Distance(neighbour.Position, endNode.Position);
-
-            //    if (thisDistance < minDistance)
-            //    {
-            //        minDistance = thisDistance;
-            //        nearestNode = neighbour;
-            //    }
-
-            //    path.Add(nearestNode.Position);
-            //}
-
-            //return path;
         }
 
         private Node GetLowestFScore(List<Node> nodes)
