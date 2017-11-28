@@ -115,6 +115,11 @@ namespace PrimitiveTest
 
         public List<Node> GetShortestPath(Vector2 start, Vector2 end)
         {
+            foreach (Node node in NodeMap)
+            {
+                node.Parent = null;
+            }
+
             Node startNode = GetClosestNodeToPoint(start);
             Node endNode = GetClosestNodeToPoint(end);
 
@@ -171,10 +176,15 @@ namespace PrimitiveTest
 
             do
             {
-                shortestPath.Add(n.Parent);
-                n = n.Parent;
+                if (n.Parent != null)
+                {
+                    shortestPath.Add(n.Parent);
+                    n = n.Parent;
+                }
+                
             } while (n.Parent != null);
 
+            shortestPath.Reverse();
 
             return shortestPath;
         }
@@ -215,7 +225,84 @@ namespace PrimitiveTest
             return shortestNode;
         }
 
-        private bool IsLineOfSight(Line line)
+        public Vector2 GetNormalToSurface(Circle circle)
+        {
+            foreach (Rectangle rect in rectangles)
+            {
+                if (IntersectsRect(rect, circle))
+                {
+                    //find which edge of rect circle is closest to
+
+                    int dl = (int)Math.Abs(rect.Left - circle.Position.X);
+                    int dr = (int)Math.Abs(rect.Right - circle.Position.X);
+
+                    int dt = (int)Math.Abs(rect.Top - circle.Position.Y);
+                    int db = (int)Math.Abs(rect.Bottom - circle.Position.Y);
+
+                    int smallest = dl;
+
+                    if (smallest > dr)
+                        smallest = dr;
+                    if (smallest > dt)
+                        smallest = dt;
+                    if (smallest > db)
+                        smallest = db;
+
+                    if (smallest == dl)
+                        return new Vector2(-1, 0);
+                    if (smallest == dr)
+                        return new Vector2(1, 0);
+                    if (smallest == dt)
+                        return new Vector2(0, -1);
+                    if (smallest == db)
+                        return new Vector2(0, 1);
+                }
+            }
+
+            return Vector2.Zero;
+        }
+
+        public bool IntersectsRect(Rectangle rect, Circle circle)
+        {
+            //get centre of rectangle
+
+            float centerX = rect.Left + rect.Width / 2f;
+            float centerY = rect.Top + rect.Height / 2f;
+
+            float dx = Math.Abs(circle.Position.X - centerX);
+            float dy = Math.Abs(circle.Position.Y - centerY);
+
+            if (dx > (rect.Width / 2f + circle.Radius)) return false;
+            if (dy > (rect.Height / 2f + circle.Radius)) return false;
+
+            if (dx <= (rect.Width / 2f))
+            {
+                return true;
+            }
+
+            if (dy <= (rect.Height / 2f))
+            {
+                return true;
+            }
+
+            float cornerDistSq = (dx - rect.Width / 2f) * (dx - rect.Width / 2f) + (dy - rect.Height / 2f) * (dy - rect.Height / 2f);
+
+            if (cornerDistSq <= (circle.Radius * circle.Radius))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool IsLineOfSight(Vector2 pos1, Vector2 pos2)
+        {
+            Line l = new Line(pos1, pos2);
+
+            return IsLineOfSight(l);
+        }
+
+        public  bool IsLineOfSight(Line line)
         {
             foreach (Rectangle rect in rectangles)
             {
