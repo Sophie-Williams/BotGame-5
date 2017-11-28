@@ -21,8 +21,14 @@ namespace PrimitiveTest
 
         public static Vector2 Scale(this Vector2 vec, float scale)
         {
+            if (vec == Vector2.Zero) return Vector2.Zero;
             vec.Normalize();
             return new Vector2(vec.X * scale, vec.Y * scale);
+        }
+
+        public static Vector2 Copy(this Vector2 vec)
+        {
+            return new Vector2(vec.X, vec.Y);
         }
     }
 }
