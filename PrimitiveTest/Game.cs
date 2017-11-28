@@ -28,6 +28,8 @@ namespace PrimitiveTest
 
         private List<Node> path;
 
+        private float pathTimer;
+
         public Game()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -87,7 +89,7 @@ namespace PrimitiveTest
             StaticMap.GetNodes();
 
             //bot1 = new Bot(1, new Vector2(150, 600), StaticMap);
-            bot1 = new Bot(1, new Vector2(600, 600), StaticMap);
+            bot1 = new Bot(1, new Vector2(10, 10), StaticMap);
 
             path = StaticMap.GetShortestPath(Vector2.Zero, new Vector2(1000, 1000));
 
@@ -118,6 +120,14 @@ namespace PrimitiveTest
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            pathTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (pathTimer > 5)
+            {
+                pathTimer = 0;
+                //path = StaticMap.GetShortestPath(bot1.GetPosition(), GetRandomPosition());
+            }
+
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
                 float x, y;
@@ -127,16 +137,25 @@ namespace PrimitiveTest
                 bot1.SetTarget(x, y);
             }
 
-            if (Mouse.GetState().LeftButton == ButtonState.Released)
-            {
-                bot1.SetTarget(Mouse.GetState().X, Mouse.GetState().Y);
-            }
+            //if (Mouse.GetState().LeftButton == ButtonState.Released)
+            //{
+            //    bot1.SetTarget(Mouse.GetState().X, Mouse.GetState().Y);
+            //}
 
             // TODO: Add your update logic here
 
             float frameRate = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            bot1.FollowPath(path);
+
+            if (Vector2.Distance(bot1.GetPosition(), bot1.GetTarget()) < 20)
+            {
+                path = StaticMap.GetShortestPath(bot1.GetPosition(), GetRandomPosition());
+            }
+
             bot1.Update(frameRate);
+
+            //path = StaticMap.GetShortestPath(Vector2.Zero, bot1.GetPosition());
 
             base.Update(gameTime);
         }
