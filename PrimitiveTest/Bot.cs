@@ -36,6 +36,8 @@ namespace PrimitiveTest
 
         private Color colour = Color.Green;
 
+        public Circle WallAvoidCircle;
+
         public Bot(int team, Vector2 position, StaticMap map)
         {
             circle = new Circle(position, 5f, Color.White);
@@ -45,6 +47,16 @@ namespace PrimitiveTest
             target = new Vector2(random.Next(200, 1000), random.Next(200, 1000));
 
             staticMap = map;
+        }
+
+        public Vector2 GetPosition()
+        {
+            return circle.Position;
+        }
+
+        public Vector2 GetTarget()
+        {
+            return target;
         }
 
         private void Stop()
@@ -69,6 +81,29 @@ namespace PrimitiveTest
             acceleration = temp;
         }
 
+        public bool FollowPath(List<Node> path)
+        {
+            //find furthest item in path that has line of sight
+            //set target to this position
+
+            for (int i = path.Count-1; i >= 0; i--)
+            {
+                if (staticMap.IsLineOfSight(circle.Position, path[i].Position))
+                {
+                    SetTarget(path[i].Position);
+
+                    if (i == 0)
+                    {
+                        return true;
+                    }
+
+                    break;
+                }
+            }
+
+            return false;
+        }
+
         public void Update(float gameTime)
         {
             float distance = circle.Position.Subtract(target).Length();
@@ -89,6 +124,8 @@ namespace PrimitiveTest
                 acceleration = velocity.Subtract(desiredVelocity);
             }
 
+            acceleration += WallAvoid();
+
             if (acceleration.Length() > 60)
             {
                 acceleration.Scale(60);
@@ -96,8 +133,6 @@ namespace PrimitiveTest
 
             velocity.X += acceleration.X * gameTime;
             velocity.Y += acceleration.Y * gameTime;
-
-            WallAvoid();
 
             if (velocity.Length() > 100)
             {
@@ -107,16 +142,52 @@ namespace PrimitiveTest
             circle.Position.X += velocity.X * gameTime;
             circle.Position.Y += velocity.Y * gameTime;
 
-            if (IsInsideBlock())
+            foreach (Rectangle rect in staticMap.rectangles)
             {
-                circle.Position.X -= velocity.X * gameTime;
-                circle.Position.Y -= velocity.Y * gameTime;
-                velocity = Vector2.Zero;
+                if (staticMap.IntersectsRect(rect, circle))
+                {
+                    circle.Position.X -= velocity.X * gameTime;
+                    circle.Position.Y -= velocity.Y * gameTime;
+                    velocity = Vector2.Zero;
+                }
             }
         }
 
-        private void WallAvoid()
+        private Vector2 WallAvoid()
         {
+            if (velocity.Length() > 2.0)
+            {
+                Vector2 tempVel = velocity.Copy();
+                WallAvoidCircle = new Circle(Vector2.Add(circle.Position, tempVel.Scale(50.0f)), 30.0f);
+            }
+            else
+            {
+                WallAvoidCircle = new Circle(circle.Position, 30.0f);
+            }
+
+            Vector2 returnVec = staticMap.GetNormalToSurface(WallAvoidCircle);
+
+            returnVec = returnVec.Scale(500.0f);
+
+            if (returnVec.Length() > 1)
+            {
+                float x;
+            }
+
+            return returnVec;
+
+            //Circle2D circle;
+            //if (velocity.magnitude() > 5.0)
+            //{
+            //    //Circle2D circle(position + (velocity * 2), WALLAVOIDRADIUS);
+            //    circle = Circle2D(position + (velocity.unitVector() * WALLAVOIDRADIUS), WALLAVOIDRADIUS);
+            //}
+            //else
+            //{
+            //    circle = Circle2D(position, WALLAVOIDRADIUS);
+            //}
+            ////Circle2D circle(position + (velocity * 2), WALLAVOIDRADIUS);
+            //return (StaticMap::GetInstance()->GetNormalToSurface(circle) * WALLAVOIDSPEED);
             //Circle circle;
 
             Vector2 temp = new Vector2(velocity.X, velocity.Y);
@@ -136,42 +207,7 @@ namespace PrimitiveTest
 
         }
 
-        public bool IsInsideBlock()
-        {
-            foreach (Rectangle rect in staticMap.rectangles)
-            {
-                //get centre of rectangle
-
-                float centerX = rect.Left + rect.Width / 2f;
-                float centerY = rect.Top + rect.Height / 2f;
-
-                float dx = Math.Abs(circle.Position.X - centerX);
-                float dy = Math.Abs(circle.Position.Y - centerY);
-
-                if (dx > (rect.Width / 2f + circle.Radius)) continue;
-                if (dy > (rect.Height / 2f + circle.Radius )) continue;
-
-                if (dx <= (rect.Width / 2f))
-                {
-                    return true;
-                }
-
-                if (dy <= (rect.Height / 2f))
-                {
-                    return true;
-                }
-
-                float cornerDistSq = (dx - rect.Width / 2f) * (dx - rect.Width / 2f) + (dy - rect.Height / 2f) * (dy - rect.Height / 2f);
-
-                if (cornerDistSq <= (circle.Radius * circle.Radius))
-                {
-                    return true;
-                }
-
-            }
-
-            return false;
-        }
+        
 
         public void SetTarget(float x, float y)
         {
@@ -196,11 +232,13 @@ namespace PrimitiveTest
             //DebugDraw.DrawLine(batch, circle.Position, circle.Radius * 2, (float) angle, Color.Red);
             DebugDraw.DrawLine(batch, circle.Position, circle.Position + lineEnd);
 
-            Vector2 centerTarget = new Vector2(target.X - circle.Radius * 2, target.Y - circle.Radius * 2);
+            //Vector2 centerTarget = new Vector2(target.X - circle.Radius * 2, target.Y - circle.Radius * 2);
 
-            DebugDraw.DrawCircle(batch, centerTarget, Color.Red);
+            DebugDraw.DrawCircle(batch, target, Color.Red);
 
-           // DebugDraw.DrawText(batch, 0, 0, string.Format("Acceleration : {0}", acceleration.Length()));
+            //WallAvoidCircle.Draw(batch);
+
+            // DebugDraw.DrawText(batch, 0, 0, string.Format("Acceleration : {0}", acceleration.Length()));
             //DebugDraw.DrawText(batch, 0, 50, string.Format("Distance To Target : {0}", circle.Position.Subtract(target).Length()));
 
         }
