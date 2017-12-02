@@ -186,6 +186,8 @@ namespace PrimitiveTest
 
             shortestPath.Reverse();
 
+            shortestPath.Add(new Node(end));
+
             return shortestPath;
         }
 
