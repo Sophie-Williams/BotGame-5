@@ -109,12 +109,12 @@ namespace PrimitiveTest
             DrawCircle(batch, new Vector2(x, y), 10, colour);
         }
 
-        public static void DrawText(SpriteBatch batch, float x, float y, string s)
+        public static void DrawText(SpriteBatch batch, float x, float y, string s, Color? c)
         {
-            batch.DrawString(Game.SpriteFont, s, new Vector2(x, y), Color.White);
+            batch.DrawString(Game.SpriteFont, s, new Vector2(x, y), c ?? Color.White);
         }
 
-        public static void DrawLine(SpriteBatch sb, Vector2 start, Vector2 end)
+        public static void DrawLine(SpriteBatch sb, Vector2 start, Vector2 end, Color? colour)
         {
             Vector2 edge = end - start;
             // calculate angle to rotate line
@@ -129,7 +129,7 @@ namespace PrimitiveTest
                     (int)edge.Length(), //sb will strech the texture to fill this rectangle
                     1), //width of line, change this to make thicker line
                 null,
-                Color.Red, //colour of line
+                colour ?? Color.Red, //colour of line
                 angle,     //angle of line (calulated above)
                 new Vector2(0, 0), // point in line about which to rotate
                 SpriteEffects.None,
