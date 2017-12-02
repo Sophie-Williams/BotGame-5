@@ -80,7 +80,7 @@ namespace PrimitiveTest
 
         public void Draw(SpriteBatch batch)
         {
-            DebugDraw.DrawLine(batch, new Vector2(X1, Y1), new Vector2(X2, Y2));
+            DebugDraw.DrawLine(batch, new Vector2(X1, Y1), new Vector2(X2, Y2), null);
         }
     }
 }
