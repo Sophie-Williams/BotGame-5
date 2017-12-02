@@ -4,6 +4,7 @@ using System.Runtime.Remoting.Channels;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using PrimitiveTest.States;
 
 namespace PrimitiveTest
 {
@@ -23,12 +24,15 @@ namespace PrimitiveTest
         public StaticMap StaticMap;
 
         private Bot bot1;
+        private Bot bot2;
 
         public static  Random random;
 
-        private List<Node> path;
-
         private float pathTimer;
+
+        private List<ToggleAction> toggleActions = new List<ToggleAction>();
+
+        private KeyboardState oldKeyboardState;
 
         public Game()
         {
@@ -39,11 +43,10 @@ namespace PrimitiveTest
             graphics.PreferredBackBufferWidth = 1200;
             graphics.PreferredBackBufferHeight = 1200;
             Content.RootDirectory = "Content";
-
             
         }
 
-        public Vector2 GetRandomPosition()
+        public static Vector2 GetRandomPosition()
         {
             float x = random.Next(0, 1200);
             float y = random.Next(0, 1200);
@@ -89,15 +92,17 @@ namespace PrimitiveTest
             StaticMap.GetNodes();
 
             //bot1 = new Bot(1, new Vector2(150, 600), StaticMap);
-            bot1 = new Bot(1, new Vector2(10, 10), StaticMap);
+            bot1 = new Bot(Team.Blue, new Vector2(10, 10), StaticMap);
+            bot2 = new Bot(Team.Red, new Vector2(600, 600), StaticMap);
 
-            path = StaticMap.GetShortestPath(Vector2.Zero, new Vector2(1000, 1000));
+            bot2.Enemy = bot1;
+            bot1.Enemy = bot2;
 
-            //rect = new RectPrimitive(GraphicsDevice, 500, 200, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f), Color.White);
+            bot1.SetState(new Wander());
+            bot2.SetState(new Seek());
 
-            //circle = new CirclePrimitive(GraphicsDevice, 192, ShapeType.Outline);
-
-            // TODO: use this.Content to load your game content here
+            toggleActions.Add(new ToggleAction(Keys.M, DrawAllNodes));
+            toggleActions.Add(new ToggleAction(Keys.N, DrawAllPaths));
 
         }
 
@@ -120,42 +125,24 @@ namespace PrimitiveTest
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            KeyboardState newKeyState = Keyboard.GetState();
+
             pathTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (pathTimer > 5)
+            foreach (ToggleAction ta in toggleActions)
             {
-                pathTimer = 0;
-                //path = StaticMap.GetShortestPath(bot1.GetPosition(), GetRandomPosition());
+                if (oldKeyboardState.IsKeyUp(ta.Key) && newKeyState.IsKeyDown(ta.Key))
+                {
+                    ta.IsActive = !ta.IsActive;
+                }
             }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.Space))
-            {
-                float x, y;
-                x = random.Next(0, 1000);
-                y = random.Next(0, 1000);
-
-                bot1.SetTarget(x, y);
-            }
-
-            //if (Mouse.GetState().LeftButton == ButtonState.Released)
-            //{
-            //    bot1.SetTarget(Mouse.GetState().X, Mouse.GetState().Y);
-            //}
-
-            // TODO: Add your update logic here
 
             float frameRate = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            bot1.FollowPath(path);
-
-            if (Vector2.Distance(bot1.GetPosition(), bot1.GetTarget()) < 20)
-            {
-                path = StaticMap.GetShortestPath(bot1.GetPosition(), GetRandomPosition());
-            }
-
             bot1.Update(frameRate);
+            bot2.Update(frameRate);
 
-            //path = StaticMap.GetShortestPath(Vector2.Zero, bot1.GetPosition());
+            oldKeyboardState = newKeyState;
 
             base.Update(gameTime);
         }
@@ -170,26 +157,26 @@ namespace PrimitiveTest
 
             spriteBatch.Begin();
 
-            //for (int i = 0; i < StaticMap.NodeMap.Count; ++i)
+            //foreach (Node n in path)
             //{
-            //    foreach (var neighbour in StaticMap.NodeMap[i].Neighbours)
+            //    DebugDraw.DrawCircle(spriteBatch, n.Position, Color.Green);
+
+            //    if (n.Parent != null)
             //    {
-            //        DebugDraw.DrawLine(spriteBatch, StaticMap.NodeMap[i].Position, neighbour.Position);
+
+            //        DebugDraw.DrawLine(spriteBatch, n.Position, n.Parent.Position);
             //    }
             //}
 
-            foreach (Node n in path)
+            StaticMap.DrawMap(spriteBatch);
+
+            foreach (var action in toggleActions)
             {
-                DebugDraw.DrawCircle(spriteBatch, n.Position, Color.Green);
-
-                if (n.Parent != null)
+                if (action.IsActive)
                 {
-
-                    DebugDraw.DrawLine(spriteBatch, n.Position, n.Parent.Position);
+                    action.Action.Invoke(spriteBatch); 
                 }
             }
-
-            StaticMap.DrawMap(spriteBatch);
 
             //DebugDraw.DrawCircle(spriteBatch, 150, 600, Color.Blue);
             //DebugDraw.DrawCircle(spriteBatch, 1050, 600, Color.Red);
@@ -204,10 +191,33 @@ namespace PrimitiveTest
             //}
 
             bot1.Draw(spriteBatch);
+            bot2.Draw(spriteBatch);
+
+            DebugDraw.DrawText(spriteBatch, 0, 0, bot1.GetState().ToString(), bot1.GetColour());
+            DebugDraw.DrawText(spriteBatch, 1000, 0, bot2.GetState().ToString(), bot2.GetColour());
 
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void DrawAllNodes(SpriteBatch batch)
+        {
+            foreach (Node n in StaticMap.NodeMap)
+            {
+                DebugDraw.DrawCircle(batch, n.Position, 5, Color.Green);
+            }
+        }
+
+        private void DrawAllPaths(SpriteBatch batch)
+        {
+            for (int i = 0; i < StaticMap.NodeMap.Count; ++i)
+            {
+                foreach (var neighbour in StaticMap.NodeMap[i].Neighbours)
+                {
+                    DebugDraw.DrawLine(batch, StaticMap.NodeMap[i].Position, neighbour.Position, new Color(Color.White, 0f));
+                }
+            }
         }
     }
 }
