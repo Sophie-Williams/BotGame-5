@@ -22,8 +22,6 @@ namespace PrimitiveTest
         private bool isAiming;
         private bool isFiring;
 
-        private int teamNumber;
-
         private int health;
 
         private Vector2 target;
@@ -34,15 +32,54 @@ namespace PrimitiveTest
 
         //private int radius = 5;
 
-        private Color colour = Color.Green;
-
         public Circle WallAvoidCircle;
 
-        public Bot(int team, Vector2 position, StaticMap map)
+        public Team Team;
+
+        private Color teamColour;
+
+        private IState currentState;
+        private IState previousState;
+
+        public StaticMap GetStaticMap() {  return staticMap; }
+
+        public Bot Enemy;
+
+        public IState GetState()
         {
-            circle = new Circle(position, 5f, Color.White);
+            return currentState;
+        }
+
+        public void SetState(IState state)
+        {
+            if (currentState != null)
+            {
+                currentState.Exit(this);
+                previousState = currentState;
+            }
+            
+            currentState = state;
+            currentState.Enter(this);
+        }
+
+        public Vector2 GetVelocity()
+        {
+            return velocity;
+        }
+
+        public Color GetColour()
+        {
+            return teamColour;
+        }
+
+
+        public Bot(Team team, Vector2 position, StaticMap map)
+        {
+            teamColour = team == Team.Red ? Color.Red : Color.Aqua;
+
+            circle = new Circle(position, 5f, teamColour);
             random = new Random();
-            teamNumber = team;
+            Team = team;
 
             target = new Vector2(random.Next(200, 1000), random.Next(200, 1000));
 
@@ -59,7 +96,7 @@ namespace PrimitiveTest
             return target;
         }
 
-        private void Stop()
+        public void Stop()
         {
             Vector2 temp = new Vector2(velocity.X, velocity.Y);
 
@@ -106,33 +143,35 @@ namespace PrimitiveTest
 
         public void Update(float gameTime)
         {
-            float distance = circle.Position.Subtract(target).Length();
+            //float distance = circle.Position.Subtract(target).Length();
 
-            if (distance < 50)
+            //if (distance < 5.0f)
+            //{
+            //    Stop();
+            //}
+            //else
+            //{
+            //    float speed = distance / 1.0f;
+
+            //    Vector2 desiredVelocity = circle.Position.Subtract(target);
+            //    desiredVelocity = desiredVelocity.Scale(speed);
+
+            //    acceleration = velocity.Subtract(desiredVelocity);
+            //}
+
+            currentState.Update(this);
+
+            
+
+            if (acceleration.Length() > 60)
             {
-                colour = Color.Blue;
-                Stop();
-            }
-            else
-            {
-                colour = Color.Green;
-                float speed = distance / 1.0f;
-
-                Vector2 desiredVelocity = circle.Position.Subtract(target);
-                desiredVelocity = desiredVelocity.Scale(speed);
-
-                acceleration = velocity.Subtract(desiredVelocity);
+                acceleration = acceleration.Scale(60);
             }
 
             acceleration += WallAvoid();
 
-            if (acceleration.Length() > 60)
-            {
-                acceleration.Scale(60);
-            }
-
-            velocity.X += acceleration.X * gameTime;
-            velocity.Y += acceleration.Y * gameTime;
+            velocity.X += acceleration.X * gameTime * 5;
+            velocity.Y += acceleration.Y * gameTime * 5;
 
             if (velocity.Length() > 100)
             {
@@ -151,6 +190,8 @@ namespace PrimitiveTest
                     velocity = Vector2.Zero;
                 }
             }
+
+            
         }
 
         private Vector2 WallAvoid()
@@ -158,7 +199,8 @@ namespace PrimitiveTest
             if (velocity.Length() > 2.0)
             {
                 Vector2 tempVel = velocity.Copy();
-                WallAvoidCircle = new Circle(Vector2.Add(circle.Position, tempVel.Scale(50.0f)), 30.0f);
+                
+                WallAvoidCircle = new Circle(Vector2.Add(circle.Position, tempVel), 30.0f);
             }
             else
             {
@@ -167,12 +209,7 @@ namespace PrimitiveTest
 
             Vector2 returnVec = staticMap.GetNormalToSurface(WallAvoidCircle);
 
-            returnVec = returnVec.Scale(500.0f);
-
-            if (returnVec.Length() > 1)
-            {
-                float x;
-            }
+            returnVec = returnVec.Scale(200.0f);
 
             return returnVec;
 
@@ -230,13 +267,13 @@ namespace PrimitiveTest
 
             //DebugDraw.DrawLine(batch, centerPos.X, centerPos.Y, centerPos.X + lineEnd.X, centerPos.Y + lineEnd.Y);
             //DebugDraw.DrawLine(batch, circle.Position, circle.Radius * 2, (float) angle, Color.Red);
-            DebugDraw.DrawLine(batch, circle.Position, circle.Position + lineEnd);
+            DebugDraw.DrawLine(batch, circle.Position, circle.Position + lineEnd, Color.White);
 
             //Vector2 centerTarget = new Vector2(target.X - circle.Radius * 2, target.Y - circle.Radius * 2);
 
             DebugDraw.DrawCircle(batch, target, Color.Red);
 
-            //WallAvoidCircle.Draw(batch);
+            WallAvoidCircle.Draw(batch);
 
             // DebugDraw.DrawText(batch, 0, 0, string.Format("Acceleration : {0}", acceleration.Length()));
             //DebugDraw.DrawText(batch, 0, 50, string.Format("Distance To Target : {0}", circle.Position.Subtract(target).Length()));
