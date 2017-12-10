@@ -26,9 +26,7 @@ namespace PrimitiveTest
         private Bot bot1;
         private Bot bot2;
 
-        public static  Random random;
-
-        private float pathTimer;
+        public static Random random;
 
         private List<ToggleAction> toggleActions = new List<ToggleAction>();
 
@@ -42,6 +40,7 @@ namespace PrimitiveTest
 
             graphics.PreferredBackBufferWidth = 1200;
             graphics.PreferredBackBufferHeight = 1200;
+            
             Content.RootDirectory = "Content";
             
         }
@@ -101,8 +100,9 @@ namespace PrimitiveTest
             bot1.SetState(new Wander());
             bot2.SetState(new Seek());
 
-            toggleActions.Add(new ToggleAction(Keys.M, DrawAllNodes));
             toggleActions.Add(new ToggleAction(Keys.N, DrawAllPaths));
+            toggleActions.Add(new ToggleAction(Keys.M, DrawAllNodes));
+            
 
         }
 
@@ -126,8 +126,6 @@ namespace PrimitiveTest
                 Exit();
 
             KeyboardState newKeyState = Keyboard.GetState();
-
-            pathTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             foreach (ToggleAction ta in toggleActions)
             {
@@ -155,7 +153,7 @@ namespace PrimitiveTest
         {
             GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
 
             //foreach (Node n in path)
             //{
@@ -215,7 +213,7 @@ namespace PrimitiveTest
             {
                 foreach (var neighbour in StaticMap.NodeMap[i].Neighbours)
                 {
-                    DebugDraw.DrawLine(batch, StaticMap.NodeMap[i].Position, neighbour.Position, new Color(Color.White, 0f));
+                    DebugDraw.DrawLine(batch, StaticMap.NodeMap[i].Position, neighbour.Position, Color.White * 0.5f);
                 }
             }
         }
