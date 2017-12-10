@@ -21,17 +21,7 @@ namespace PrimitiveTest.States
 
         public void Update(Bot bot)
         {
-            //Vector2D desiredVelocity = (mTargetPosition - position).unitVector() * MAXBOTSPEED;
-
-            //Vector2D behaviourAccn = desiredVelocity - velocity;
-
-            //return behaviourAccn;
-
-            Vector2 desiredVelocity = Vector2.Subtract(bot.Enemy.GetPosition(), bot.GetPosition());
-            desiredVelocity.Normalize();
-            desiredVelocity = desiredVelocity.Scale(100.0f);
-
-            bot.acceleration += desiredVelocity;
+            bot.acceleration += Behaviours.Seek(bot);
 
             if (bot.GetStaticMap().IsLineOfSight(bot.GetPosition(), bot.Enemy.GetPosition()))
             {

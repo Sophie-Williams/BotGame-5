@@ -28,7 +28,7 @@ namespace PrimitiveTest.States
 
             if (Vector2.Distance(bot.GetPosition(), bot.GetTarget()) < 20)
             {
-                //path = bot.GetStaticMap().GetShortestPath(bot.GetPosition(), Game.GetRandomPosition());
+                path = bot.GetStaticMap().GetShortestPath(bot.GetPosition(), Game.GetRandomPosition());
             }
 
             float distance = bot.GetPosition().Subtract(bot.GetTarget()).Length();
