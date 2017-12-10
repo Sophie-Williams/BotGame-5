@@ -41,9 +41,14 @@ namespace PrimitiveTest
         private IState currentState;
         private IState previousState;
 
+        private double fireCooldown;
+        private double accuracy;
+
         public StaticMap GetStaticMap() {  return staticMap; }
 
         public Bot Enemy;
+
+        private float respawnTimer = 5;
 
         public IState GetState()
         {
@@ -72,6 +77,30 @@ namespace PrimitiveTest
             return teamColour;
         }
 
+        public void Shoot()
+        {
+            isFiring = true;
+        }
+
+        public void TakeDamage(int amount)
+        {
+            health -= amount;
+
+            if (health <= 0 && respawnTimer <= 0)
+            {
+                respawnTimer = 10.0f;
+            }
+
+            if (amount > 0)
+            {
+                accuracy = 0;
+            }
+            else
+            {
+                accuracy *= .5f;
+            }
+        }
+
 
         public Bot(Team team, Vector2 position, StaticMap map)
         {
@@ -80,6 +109,9 @@ namespace PrimitiveTest
             circle = new Circle(position, 5f, teamColour);
             random = new Random();
             Team = team;
+            fireCooldown = 0;
+            health = 100;
+            respawnTimer = 1;
 
             target = new Vector2(random.Next(200, 1000), random.Next(200, 1000));
 
@@ -141,56 +173,52 @@ namespace PrimitiveTest
             return false;
         }
 
+        public bool IsAlive()
+        {
+            return respawnTimer <= 0;
+        }
+
         public void Update(float gameTime)
         {
-            //float distance = circle.Position.Subtract(target).Length();
-
-            //if (distance < 5.0f)
-            //{
-            //    Stop();
-            //}
-            //else
-            //{
-            //    float speed = distance / 1.0f;
-
-            //    Vector2 desiredVelocity = circle.Position.Subtract(target);
-            //    desiredVelocity = desiredVelocity.Scale(speed);
-
-            //    acceleration = velocity.Subtract(desiredVelocity);
-            //}
-
-            currentState.Update(this);
-
-            
-
-            if (acceleration.Length() > 60)
+            if (respawnTimer > 0)
             {
-                acceleration = acceleration.Scale(60);
+                respawnTimer -= gameTime;
+                velocity = Vector2.Zero;
             }
-
-            acceleration += WallAvoid();
-
-            velocity.X += acceleration.X * gameTime * 5;
-            velocity.Y += acceleration.Y * gameTime * 5;
-
-            if (velocity.Length() > 100)
+            else
             {
-                velocity = velocity.Scale(100);
-            }
+                
+                currentState.Update(this);
 
-            circle.Position.X += velocity.X * gameTime;
-            circle.Position.Y += velocity.Y * gameTime;
-
-            foreach (Rectangle rect in staticMap.rectangles)
-            {
-                if (staticMap.IntersectsRect(rect, circle))
+                if (acceleration.Length() > 60)
                 {
-                    circle.Position.X -= velocity.X * gameTime;
-                    circle.Position.Y -= velocity.Y * gameTime;
-                    velocity = Vector2.Zero;
+                    acceleration = acceleration.Scale(60);
                 }
-            }
 
+                acceleration += WallAvoid();
+
+                velocity.X += acceleration.X * gameTime * 5;
+                velocity.Y += acceleration.Y * gameTime * 5;
+
+                if (velocity.Length() > 100)
+                {
+                    velocity = velocity.Scale(100);
+                }
+
+                circle.Position.X += velocity.X * gameTime;
+                circle.Position.Y += velocity.Y * gameTime;
+
+                foreach (Rectangle rect in staticMap.rectangles)
+                {
+                    if (staticMap.IntersectsRect(rect, circle))
+                    {
+                        circle.Position.X -= velocity.X * gameTime;
+                        circle.Position.Y -= velocity.Y * gameTime;
+                        velocity = Vector2.Zero;
+                    }
+                }
+
+            }
             
         }
 
@@ -212,39 +240,7 @@ namespace PrimitiveTest
             returnVec = returnVec.Scale(200.0f);
 
             return returnVec;
-
-            //Circle2D circle;
-            //if (velocity.magnitude() > 5.0)
-            //{
-            //    //Circle2D circle(position + (velocity * 2), WALLAVOIDRADIUS);
-            //    circle = Circle2D(position + (velocity.unitVector() * WALLAVOIDRADIUS), WALLAVOIDRADIUS);
-            //}
-            //else
-            //{
-            //    circle = Circle2D(position, WALLAVOIDRADIUS);
-            //}
-            ////Circle2D circle(position + (velocity * 2), WALLAVOIDRADIUS);
-            //return (StaticMap::GetInstance()->GetNormalToSurface(circle) * WALLAVOIDSPEED);
-            //Circle circle;
-
-            Vector2 temp = new Vector2(velocity.X, velocity.Y);
-            Vector2 newPos;
-
-            if (velocity.Length() > 5.0)
-            {
-                newPos = new Vector2(circle.Position.X, circle.Position.Y);
-                newPos.X += velocity.X * 40;
-                newPos.Y += velocity.Y * 40;
-            }
-            else
-            {
-                newPos = new Vector2(circle.Position.X, circle.Position.Y);
-            }
-
-
         }
-
-        
 
         public void SetTarget(float x, float y)
         {
@@ -273,7 +269,10 @@ namespace PrimitiveTest
 
             DebugDraw.DrawCircle(batch, target, Color.Red);
 
-            WallAvoidCircle.Draw(batch);
+            if (WallAvoidCircle != null)
+            {
+                //WallAvoidCircle.Draw(batch);
+            }
 
             // DebugDraw.DrawText(batch, 0, 0, string.Format("Acceleration : {0}", acceleration.Length()));
             //DebugDraw.DrawText(batch, 0, 50, string.Format("Distance To Target : {0}", circle.Position.Subtract(target).Length()));
