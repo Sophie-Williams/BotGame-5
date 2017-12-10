@@ -257,18 +257,36 @@ namespace PrimitiveTest
 
         public void Draw(SpriteBatch batch)
         {
-            circle.Draw(batch);
+            if (IsAlive())
+            {
+                circle.Draw(batch);
 
-            double angle = Math.Atan2(velocity.Y, velocity.X);
+                double angle = Math.Atan2(velocity.Y, velocity.X);
 
-            Vector2 lineEnd = new Vector2((float)Math.Cos(angle) * circle.Radius * 2, (float)Math.Sin(angle) * circle.Radius * 2);
+                Vector2 lineEnd = new Vector2((float)Math.Cos(angle) * circle.Radius * 2, (float)Math.Sin(angle) * circle.Radius * 2);
 
-            //DebugDraw.DrawLine(batch, centerPos.X, centerPos.Y, centerPos.X + lineEnd.X, centerPos.Y + lineEnd.Y);
-            //DebugDraw.DrawLine(batch, circle.Position, circle.Radius * 2, (float) angle, Color.Red);
-            DebugDraw.DrawLine(batch, circle.Position, circle.Position + lineEnd, Color.White);
+                DebugDraw.DrawLine(batch, circle.Position, circle.Position + lineEnd, Color.White);
+            }
+            else
+            {
+                //draw an X in position
 
-            //Vector2 centerTarget = new Vector2(target.X - circle.Radius * 2, target.Y - circle.Radius * 2);
+                //top left : (pos.X - radius, pos.Y - radius)
+                //top right : (pos.X + radius, pos.Y - radius)
 
+                DebugDraw.DrawLine(batch, 
+                    new Vector2(circle.Position.X - circle.Radius, circle.Position.Y - circle.Radius),
+                    new Vector2(circle.Position.X + circle.Radius, circle.Position.Y + circle.Radius),
+                    teamColour
+                    );
+
+                DebugDraw.DrawLine(batch,
+                    new Vector2(circle.Position.X + circle.Radius, circle.Position.Y - circle.Radius),
+                    new Vector2(circle.Position.X - circle.Radius, circle.Position.Y + circle.Radius),
+                    teamColour
+                    );
+            }
+      
             DebugDraw.DrawCircle(batch, target, Color.Red);
 
             if (WallAvoidCircle != null)
