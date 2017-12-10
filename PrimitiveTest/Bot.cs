@@ -205,6 +205,8 @@ namespace PrimitiveTest
                     velocity = velocity.Scale(100);
                 }
 
+                rotation = Math.Atan2(velocity.Y, velocity.X);
+
                 circle.Position.X += velocity.X * gameTime;
                 circle.Position.Y += velocity.Y * gameTime;
 
