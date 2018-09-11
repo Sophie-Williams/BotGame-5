@@ -264,6 +264,17 @@ namespace PrimitiveTest
             return Vector2.Zero;
         }
 
+        public bool IntersectsRect(Rectangle rect, Vector2 point)
+        {
+            if (point.X < rect.Left) return false;
+            if (point.X > rect.Right) return false;
+
+            if (point.Y < rect.Top) return false;
+            if (point.Y > rect.Bottom) return false;
+
+            return true;
+        }
+
         public bool IntersectsRect(Rectangle rect, Circle circle)
         {
             //get centre of rectangle

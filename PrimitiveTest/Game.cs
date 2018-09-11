@@ -32,6 +32,12 @@ namespace PrimitiveTest
 
         private KeyboardState oldKeyboardState;
 
+        private List<Bot> allBots = new List<Bot>();
+
+        private Bot selectedBot;
+
+        private ShotManager shotManager;
+
         public Game()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -78,6 +84,7 @@ namespace PrimitiveTest
             spriteBatch = new SpriteBatch(GraphicsDevice);
             SpriteFont = Content.Load<SpriteFont>("font");
             StaticMap = new StaticMap();
+            shotManager = new ShotManager(StaticMap);
 
             StaticMap.AddRectangle(300, 100, 50, 150);
             StaticMap.AddRectangle(300, 250, 200, 200);
@@ -91,8 +98,8 @@ namespace PrimitiveTest
             StaticMap.GetNodes();
 
             //bot1 = new Bot(1, new Vector2(150, 600), StaticMap);
-            bot1 = new Bot(Team.Blue, new Vector2(10, 10), StaticMap);
-            bot2 = new Bot(Team.Red, new Vector2(600, 600), StaticMap);
+            bot1 = new Bot(Team.Blue, new Vector2(10, 10), StaticMap, shotManager);
+            bot2 = new Bot(Team.Red, new Vector2(600, 600), StaticMap, shotManager);
 
             bot2.Enemy = bot1;
             bot1.Enemy = bot2;
@@ -100,9 +107,14 @@ namespace PrimitiveTest
             bot1.SetState(new Wander());
             bot2.SetState(new Seek());
 
+            allBots.Add(bot1);
+            allBots.Add(bot2);
+            selectedBot = allBots[0];
+
             toggleActions.Add(new ToggleAction(Keys.N, DrawAllPaths));
             toggleActions.Add(new ToggleAction(Keys.M, DrawAllNodes));
-            
+
+            //shotManager.AddShot(bot1.GetPosition(), bot2.GetPosition());
 
         }
 
@@ -135,12 +147,32 @@ namespace PrimitiveTest
                 }
             }
 
+            if (oldKeyboardState.IsKeyDown(Keys.P) && newKeyState.IsKeyUp(Keys.P))
+            {
+                SimulateHit(spriteBatch);
+            }
+
+            if (oldKeyboardState.IsKeyUp(Keys.NumPad1) && newKeyState.IsKeyDown(Keys.NumPad1))
+            {
+                selectedBot = allBots[0];
+            } else if (oldKeyboardState.IsKeyUp(Keys.NumPad2) && newKeyState.IsKeyDown(Keys.NumPad2))
+            {
+                selectedBot = allBots[1];
+            }
+
+            if (oldKeyboardState.IsKeyDown(Keys.Space) && newKeyState.IsKeyUp(Keys.Space))
+            {
+                bot1.Fire();
+            }
+
             float frameRate = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             bot1.Update(frameRate);
             bot2.Update(frameRate);
 
             oldKeyboardState = newKeyState;
+
+            shotManager.Update(frameRate);
 
             base.Update(gameTime);
         }
@@ -167,6 +199,8 @@ namespace PrimitiveTest
             //}
 
             StaticMap.DrawMap(spriteBatch);
+
+            shotManager.Draw(spriteBatch);
 
             foreach (var action in toggleActions)
             {
@@ -205,6 +239,11 @@ namespace PrimitiveTest
             {
                 DebugDraw.DrawCircle(batch, n.Position, 5, Color.Green);
             }
+        }
+
+        private void SimulateHit(SpriteBatch batch)
+        {
+            selectedBot.TakeDamage(1);
         }
 
         private void DrawAllPaths(SpriteBatch batch)

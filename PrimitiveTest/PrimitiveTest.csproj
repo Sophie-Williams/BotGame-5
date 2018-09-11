@@ -53,6 +53,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RectPrimitive.cs" />
+    <Compile Include="ShotManager.cs" />
     <Compile Include="States\Pursue.cs" />
     <Compile Include="States\Seek.cs" />
     <Compile Include="States\Wander.cs" />

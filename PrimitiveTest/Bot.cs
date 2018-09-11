@@ -21,6 +21,7 @@ namespace PrimitiveTest
 
         private bool isAiming;
         private bool isFiring;
+        private bool isHit = false;
 
         private int health;
 
@@ -29,6 +30,7 @@ namespace PrimitiveTest
         private static Random random;
 
         private StaticMap staticMap;
+        private ShotManager shotManager;
 
         //private int radius = 5;
 
@@ -42,6 +44,7 @@ namespace PrimitiveTest
         private IState previousState;
 
         private double fireCooldown;
+        private double shotCooldown;
         private double accuracy;
 
         public StaticMap GetStaticMap() {  return staticMap; }
@@ -99,10 +102,18 @@ namespace PrimitiveTest
             {
                 accuracy *= .5f;
             }
+
+            isHit = true;
+            shotCooldown = 0.2f;
+
+            Vector2 temp = velocity.Copy();
+            temp.Normalize();
+
+            circle.Position -= temp * 8f;
         }
 
 
-        public Bot(Team team, Vector2 position, StaticMap map)
+        public Bot(Team team, Vector2 position, StaticMap map, ShotManager sManager)
         {
             teamColour = team == Team.Red ? Color.Red : Color.Aqua;
 
@@ -116,6 +127,7 @@ namespace PrimitiveTest
             target = new Vector2(random.Next(200, 1000), random.Next(200, 1000));
 
             staticMap = map;
+            shotManager = sManager;
         }
 
         public Vector2 GetPosition()
@@ -187,8 +199,17 @@ namespace PrimitiveTest
             }
             else
             {
-                
                 currentState.Update(this);
+
+                if (isHit)
+                {
+                    shotCooldown -= gameTime;
+
+                    if (shotCooldown <= 0)
+                    {
+                        isHit = false;
+                    }
+                }
 
                 if (acceleration.Length() > 60)
                 {
@@ -244,6 +265,11 @@ namespace PrimitiveTest
             return returnVec;
         }
 
+        public void Fire()
+        {
+            shotManager.AddShot(circle.Position, target);
+        }
+
         public void SetTarget(float x, float y)
         {
             target.X = x;
@@ -260,6 +286,11 @@ namespace PrimitiveTest
             if (IsAlive())
             {
                 circle.Draw(batch);
+
+                if (isHit)
+                {
+                    DebugDraw.DrawCircle(batch, circle.Position, circle.Radius - 2f, Color.Black);
+                }
 
                 double angle = Math.Atan2(velocity.Y, velocity.X);
 
