@@ -20,9 +20,13 @@ namespace PrimitiveTest
 
         public List<Line> AllLines;
 
-        public StaticMap()
+        private Texture2D sandBagTexture;
+
+        public StaticMap(Texture2D sandbagTexture)
         {
             rectangles = new List<Rectangle>();
+
+            sandBagTexture = sandbagTexture;
 
             texture = new Texture2D(Game.graphics.GraphicsDevice, 100, 100);
 
@@ -53,6 +57,20 @@ namespace PrimitiveTest
             foreach (Rectangle rect in rectangles)
             {
                 DrawRect(batch, rect);
+            }
+
+            foreach (Rectangle rect in rectangles)
+            {
+                Vector2 left = new Vector2(rect.Location.X, rect.Location.Y);
+                Vector2 center = new Vector2(sandBagTexture.Width * 0.5f, sandBagTexture.Height * 0.5f);
+
+                //batch.Draw(texture, circle.Position, texture.Bounds, Color.White, ((float)angle - (float)Math.PI / 2.0f), texCenter, Vector2.One,
+                //SpriteEffects.None, 1.0f);
+
+                batch.Draw(sandBagTexture, left, sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f); //topLeft
+                batch.Draw(sandBagTexture, left + new Vector2(rect.Width, rect.Height), sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f); //bottomRight
+                batch.Draw(sandBagTexture, left + new Vector2(rect.Width, 0), sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f);//topRight
+                batch.Draw(sandBagTexture, left + new Vector2(0, rect.Height), sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f); //bottomLeft
             }
         }
 

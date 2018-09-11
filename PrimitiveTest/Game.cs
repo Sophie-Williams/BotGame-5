@@ -17,6 +17,10 @@ namespace PrimitiveTest
         SpriteBatch spriteBatch;
         public static SpriteFont SpriteFont;
 
+        private Texture2D[] tankTextures;
+        private Texture2D backgroundTexture;
+        private Texture2D sandBagTexture;
+
         //private RectPrimitive rect;
 
         //private CirclePrimitive circle;
@@ -83,8 +87,21 @@ namespace PrimitiveTest
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             SpriteFont = Content.Load<SpriteFont>("font");
-            StaticMap = new StaticMap();
+            
             shotManager = new ShotManager(StaticMap);
+
+            tankTextures = new Texture2D[5];
+
+            tankTextures[0] = Content.Load<Texture2D>("tank_blue");
+            tankTextures[1] = Content.Load<Texture2D>("tank_red");
+            tankTextures[2] = Content.Load<Texture2D>("tank_green");
+            tankTextures[3] = Content.Load<Texture2D>("tank_dark");
+            tankTextures[4] = Content.Load<Texture2D>("tank_sand");
+
+            backgroundTexture = Content.Load<Texture2D>("tileGrass1");
+            sandBagTexture = Content.Load<Texture2D>("barricadeWood");
+
+            StaticMap = new StaticMap(sandBagTexture);
 
             StaticMap.AddRectangle(300, 100, 50, 150);
             StaticMap.AddRectangle(300, 250, 200, 200);
@@ -98,8 +115,8 @@ namespace PrimitiveTest
             StaticMap.GetNodes();
 
             //bot1 = new Bot(1, new Vector2(150, 600), StaticMap);
-            bot1 = new Bot(Team.Blue, new Vector2(10, 10), StaticMap, shotManager);
-            bot2 = new Bot(Team.Red, new Vector2(600, 600), StaticMap, shotManager);
+            bot1 = new Bot(Team.Blue, new Vector2(10, 10), StaticMap, shotManager, tankTextures[0]);
+            bot2 = new Bot(Team.Red, new Vector2(600, 600), StaticMap, shotManager, tankTextures[1]);
 
             bot2.Enemy = bot1;
             bot1.Enemy = bot2;
@@ -187,6 +204,8 @@ namespace PrimitiveTest
 
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
 
+            DrawBackground();
+
             //foreach (Node n in path)
             //{
             //    DebugDraw.DrawCircle(spriteBatch, n.Position, Color.Green);
@@ -231,6 +250,19 @@ namespace PrimitiveTest
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void DrawBackground()
+        {
+            int size = backgroundTexture.Width;
+
+            for (int i = 0; i < graphics.PreferredBackBufferWidth; i += size)
+            {
+                for (int j = 0; j < graphics.PreferredBackBufferHeight; j += size)
+                {
+                    spriteBatch.Draw(backgroundTexture, new Vector2(i, j), Color.White);
+                }
+            }
         }
 
         private void DrawAllNodes(SpriteBatch batch)

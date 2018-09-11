@@ -14,6 +14,8 @@ namespace PrimitiveTest
     {
         //private Vector2 position;
 
+        private Texture2D texture;
+
         private Circle circle;
         private Vector2 velocity;
         public Vector2 acceleration;
@@ -113,7 +115,7 @@ namespace PrimitiveTest
         }
 
 
-        public Bot(Team team, Vector2 position, StaticMap map, ShotManager sManager)
+        public Bot(Team team, Vector2 position, StaticMap map, ShotManager sManager, Texture2D texture)
         {
             teamColour = team == Team.Red ? Color.Red : Color.Aqua;
 
@@ -128,6 +130,7 @@ namespace PrimitiveTest
 
             staticMap = map;
             shotManager = sManager;
+            this.texture = texture;
         }
 
         public Vector2 GetPosition()
@@ -285,6 +288,15 @@ namespace PrimitiveTest
         {
             if (IsAlive())
             {
+                double angle = Math.Atan2(velocity.Y, velocity.X);
+
+                Vector2 texCenter = new Vector2(texture.Width*0.5f, texture.Height*0.5f);
+
+                Vector2 newPos = new Vector2(circle.Position.X + (texture.Width*0.5f),
+                    circle.Position.Y + (texture.Height*0.5f));
+
+                batch.Draw(texture, circle.Position, texture.Bounds, Color.White, ((float)angle - (float)Math.PI / 2.0f), texCenter, Vector2.One,
+                    SpriteEffects.None, 1.0f);
                 circle.Draw(batch);
 
                 if (isHit)
@@ -292,7 +304,7 @@ namespace PrimitiveTest
                     DebugDraw.DrawCircle(batch, circle.Position, circle.Radius - 2f, Color.Black);
                 }
 
-                double angle = Math.Atan2(velocity.Y, velocity.X);
+                
 
                 Vector2 lineEnd = new Vector2((float)Math.Cos(angle) * circle.Radius * 2, (float)Math.Sin(angle) * circle.Radius * 2);
 
