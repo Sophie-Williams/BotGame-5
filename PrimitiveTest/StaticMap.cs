@@ -21,12 +21,16 @@ namespace PrimitiveTest
         public List<Line> AllLines;
 
         private Texture2D sandBagTexture;
+        private Texture2D backgroundTexture;
+        private Texture2D fenceTexture;
 
-        public StaticMap(Texture2D sandbagTexture)
+        public StaticMap(Texture2D backgroundTexture, Texture2D sandbagTexture, Texture2D fenceTexture)
         {
             rectangles = new List<Rectangle>();
 
             sandBagTexture = sandbagTexture;
+            this.backgroundTexture = backgroundTexture;
+            this.fenceTexture = fenceTexture;
 
             texture = new Texture2D(Game.graphics.GraphicsDevice, 100, 100);
 
@@ -56,7 +60,28 @@ namespace PrimitiveTest
         {
             foreach (Rectangle rect in rectangles)
             {
-                DrawRect(batch, rect);
+                //DrawRect(batch, rect);
+            }
+
+            foreach (Rectangle rect in rectangles)
+            {
+                //horizontal
+                for (int i = rect.Left; i <= rect.Right; i += fenceTexture.Width)
+                {
+                    batch.Draw(fenceTexture, new Vector2(i, rect.Top-10), Color.White);
+                    batch.Draw(fenceTexture, new Vector2(i, rect.Bottom - 10), Color.White);
+                }
+
+                //vertical
+                for (int i = rect.Top; i <= rect.Bottom; i += fenceTexture.Width)
+                {
+                    batch.Draw(fenceTexture, new Vector2(rect.Left+10, i), fenceTexture.Bounds, Color.White, (float)Math.PI*0.5f, Vector2.Zero, Vector2.One,
+                        SpriteEffects.None, 1.0f);
+
+                    batch.Draw(fenceTexture, new Vector2(rect.Right + 10, i), fenceTexture.Bounds, Color.White, (float)Math.PI * 0.5f, Vector2.Zero, Vector2.One,
+                        SpriteEffects.None, 1.0f);
+                }
+
             }
 
             foreach (Rectangle rect in rectangles)
@@ -67,10 +92,10 @@ namespace PrimitiveTest
                 //batch.Draw(texture, circle.Position, texture.Bounds, Color.White, ((float)angle - (float)Math.PI / 2.0f), texCenter, Vector2.One,
                 //SpriteEffects.None, 1.0f);
 
-                batch.Draw(sandBagTexture, left, sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f); //topLeft
-                batch.Draw(sandBagTexture, left + new Vector2(rect.Width, rect.Height), sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f); //bottomRight
-                batch.Draw(sandBagTexture, left + new Vector2(rect.Width, 0), sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f);//topRight
-                batch.Draw(sandBagTexture, left + new Vector2(0, rect.Height), sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f); //bottomLeft
+                //batch.Draw(sandBagTexture, left, sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f); //topLeft
+                //batch.Draw(sandBagTexture, left + new Vector2(rect.Width, rect.Height), sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f); //bottomRight
+                //batch.Draw(sandBagTexture, left + new Vector2(rect.Width, 0), sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f);//topRight
+                //batch.Draw(sandBagTexture, left + new Vector2(0, rect.Height), sandBagTexture.Bounds, Color.White, 0f, center, Vector2.One, SpriteEffects.None, 1.0f); //bottomLeft
             }
         }
 

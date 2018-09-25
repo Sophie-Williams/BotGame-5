@@ -18,8 +18,10 @@ namespace PrimitiveTest
         public static SpriteFont SpriteFont;
 
         private Texture2D[] tankTextures;
-        private Texture2D backgroundTexture;
+        private Texture2D[] backgroundTextures;
         private Texture2D sandBagTexture;
+        private Texture2D sandTexture;
+        private Texture2D fenceTexture;
 
         //private RectPrimitive rect;
 
@@ -41,6 +43,8 @@ namespace PrimitiveTest
         private Bot selectedBot;
 
         private ShotManager shotManager;
+
+        private List<int> backgroundMap;
 
         public Game()
         {
@@ -98,10 +102,15 @@ namespace PrimitiveTest
             tankTextures[3] = Content.Load<Texture2D>("tank_dark");
             tankTextures[4] = Content.Load<Texture2D>("tank_sand");
 
-            backgroundTexture = Content.Load<Texture2D>("tileGrass1");
-            sandBagTexture = Content.Load<Texture2D>("barricadeWood");
+            backgroundTextures = new Texture2D[2];
+            backgroundTextures[0] = Content.Load<Texture2D>("tileGrass1");
+            backgroundTextures[1] = Content.Load<Texture2D>("tileGrass2");
 
-            StaticMap = new StaticMap(sandBagTexture);
+            sandTexture = Content.Load<Texture2D>("tileSand1");
+            sandBagTexture = Content.Load<Texture2D>("barricadeWood");
+            fenceTexture = Content.Load<Texture2D>("fenceYellow");
+
+            StaticMap = new StaticMap(sandTexture, sandBagTexture, fenceTexture);
 
             StaticMap.AddRectangle(300, 100, 50, 150);
             StaticMap.AddRectangle(300, 250, 200, 200);
@@ -130,6 +139,8 @@ namespace PrimitiveTest
 
             toggleActions.Add(new ToggleAction(Keys.N, DrawAllPaths));
             toggleActions.Add(new ToggleAction(Keys.M, DrawAllNodes));
+
+            backgroundMap = CreateBackgroundTextureMap();
 
             //shotManager.AddShot(bot1.GetPosition(), bot2.GetPosition());
 
@@ -254,15 +265,36 @@ namespace PrimitiveTest
 
         private void DrawBackground()
         {
-            int size = backgroundTexture.Width;
+            int size = backgroundTextures[0].Width;
+            int counter = 0;
 
             for (int i = 0; i < graphics.PreferredBackBufferWidth; i += size)
             {
                 for (int j = 0; j < graphics.PreferredBackBufferHeight; j += size)
                 {
-                    spriteBatch.Draw(backgroundTexture, new Vector2(i, j), Color.White);
+                    int val = backgroundMap[counter];
+                    counter++;
+
+                    spriteBatch.Draw(backgroundTextures[val], new Vector2(i, j), Color.White);
                 }
             }
+        }
+
+        private List<int> CreateBackgroundTextureMap()
+        {
+            int size = backgroundTextures[0].Width;
+            List<int> map = new List<int>();
+
+            for (int i = 0; i < graphics.PreferredBackBufferWidth; i += size)
+            {
+                for (int j = 0; j < graphics.PreferredBackBufferHeight; j += size)
+                {
+                    int rand = random.Next(2);
+                    map.Add(rand);
+                }
+            }
+
+            return map;
         }
 
         private void DrawAllNodes(SpriteBatch batch)
